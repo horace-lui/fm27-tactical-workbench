@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FM27 戰術工作台</title>
-<meta name="description" content="Football Manager 2027 戰術契合分析工具：自訂陣式同指示，睇十一人契合、強弱同按預算嘅補強建議。球迷工具，與 Sports Interactive／SEGA 無關。">
+<meta name="description" content="Football Manager 2027 戰術契合分析工具：自訂陣式同指示，睇十一人契合、強弱同每個缺口嘅補強選項。球迷工具，與 Sports Interactive／SEGA 無關。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -85,8 +85,10 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.9f
 }
 .pitch-wrap svg.marks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .slot{
-  position:absolute;transform:translate(-50%,-50%);width:86px;text-align:center;cursor:pointer;color:#fff;z-index:2
+  position:absolute;transform:translate(-50%,-50%);width:86px;text-align:center;cursor:pointer;color:#fff;z-index:2;
+  transition:left .48s cubic-bezier(.22,.7,.25,1), top .48s cubic-bezier(.22,.7,.25,1);
 }
+.slot.on{z-index:4}
 .slot .dot{
   width:44px;height:44px;border-radius:50%;margin:0 auto 5px;background:#10231c;border:2px solid rgba(255,255,255,.82);
   display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.35);font-size:11px;font-weight:700;letter-spacing:.02em
@@ -123,13 +125,30 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.9f
 .report h3:first-child{margin-top:4px}
 .fitrow{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 .fitrow .muted{color:var(--muted);font-size:12px;margin-top:2px}
-.recs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:700px){.recs{grid-template-columns:1fr}.top{flex-wrap:wrap}}
-.colA,.colB{border:1px solid var(--line);border-radius:14px;padding:10px;background:#0e1413}
-.colA h4{color:var(--good);margin:0 0 8px;font-size:13px}
-.colB h4{color:var(--bad);margin:0 0 8px;font-size:13px}
-.cardp{padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:12.5px}
-.cardp:hover{color:var(--gold2)}
+@media(max-width:700px){.top{flex-wrap:wrap}}
+.pitch-note{margin:10px 6px 0;font-size:11.5px;line-height:1.5;color:var(--muted)}
+.gap{margin:16px 0 8px;padding-top:8px;border-top:1px solid var(--line)}
+.gap h4{margin:0 0 4px;font-size:14px;font-weight:700;letter-spacing:-.01em}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.opt{
+  display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;appearance:none;
+  background:#0e1413;border:1px solid var(--line2);border-radius:14px;padding:10px 10px 11px;color:inherit;cursor:pointer
+}
+.opt:hover{border-color:rgba(231,197,106,.55);background:#121a18}
+.opt img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#222;flex:none}
+.opt-ph{width:46px;height:46px;border-radius:50%;background:#1a2421;flex:none}
+.opt-body{min-width:0;flex:1}
+.opt-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.opt-top b{font-size:14px;letter-spacing:-.01em}
+.opt .club{color:var(--muted);font-size:12px}
+.badge{border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700}
+.deg-high,.feas-ok{background:rgba(61,220,151,.16);color:var(--good)}
+.deg-mid{background:rgba(224,160,74,.18);color:#f0c27a}
+.deg-low,.feas-over{background:rgba(255,107,107,.14);color:#ffb0b0}
+.feas-free{background:rgba(231,197,106,.16);color:var(--gold2)}
+.feas-nocap{background:rgba(255,255,255,.06);color:var(--muted)}
+.opt .why,.opt .degline,.opt .feasline{display:block;font-size:12px;line-height:1.55;color:var(--muted);margin-top:5px}
+.opt .degline{color:var(--ink)}
 .ti-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .ti-grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
 .muted{color:var(--muted)}
@@ -318,9 +337,9 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.9f
   <div class="dossier about">
     <button class="x" type="button" id="aboutX">×</button>
     <h2 style="margin-top:0">關於呢個工具</h2>
-    <p>呢個係球迷自製嘅 Football Manager 2027 戰術契合工作台，方便你喺瀏覽器配陣式、揀人，睇契合、強弱同按預算嘅補強建議。佢唔係比賽引擎，亦計唔到遊戲入面嘅 Tactical Effectiveness。同 Sports Interactive／SEGA 無關，亦唔係官方產品。</p>
+    <p>呢個係球迷自製嘅 Football Manager 2027 戰術契合工作台，方便你喺瀏覽器配陣式、揀人，睇契合、強弱同每個缺口嘅補強選項。佢唔係比賽引擎，亦計唔到遊戲入面嘅 Tactical Effectiveness。同 Sports Interactive／SEGA 無關，亦唔係官方產品。</p>
     <p>球員資料來自 FM Scout 嘅 FM27 搜尋庫（每次搜尋上限 500 人，已用國家同年齡拆細倒庫），嵌入約 15,959 人，其中 15,951 人有專頁檔案。呢個仍然唔等於遊戲全部註冊球員。球會頁只有「最佳球員」，唔係完整陣容。</p>
-    <p>星級、角色分同 1–20 綜合分都係 FM Scout 展示，唔係隱藏 CA／PA。身價同周薪只用公開數字，遊戲入面可能唔同，對方都可以拒絕。陣式同指示已核對常見官方名單，不過遊戲入面嘅陣式變體仲多過呢版；部分 FM27 盒內新指示因為未核到正式名稱而暫時未加入。</p>
+    <p>星級、角色分同 1–20 綜合分都係 FM Scout 展示，唔係隱藏 CA／PA。身價同周薪只用公開數字，遊戲入面可能唔同，對方都可以拒絕，列出嘅數字亦唔係叫價。棋子會按公開角色描述對照呢個工具嘅陣式帶，再行大約一半至七成，呢個係視覺近似，唔係官方 SI 座標。陣式同指示已核對常見官方名單，不過遊戲入面嘅陣式變體仲多過呢版；部分 FM27 盒內新指示因為未核到正式名稱而暫時未加入。</p>
     <p class="small">「我嘅球會」同預算只係情境設定，任何遊戲存檔都唔會被改動。戰術同十一人會存在你嘅瀏覽器，重新整理唔會消失。相片要有網絡先會出。</p>
   </div>
 </div>
@@ -3216,6 +3235,12 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
   const CLUBS=window.FM27_CLUBS||[];
   const byId=Object.create(null);
   POOL.forEach(p=>{byId[p.id]=p});
+  const ROLE_IDX=POOL.map(function(p){
+    const ip=Object.create(null), op=Object.create(null);
+    (p.ip||[]).forEach(function(r){ if(ip[r[0]]==null || r[1]>ip[r[0]]) ip[r[0]]=r[1]; });
+    (p.op||[]).forEach(function(r){ if(op[r[0]]==null || r[1]>op[r[0]]) op[r[0]]=r[1]; });
+    return {ip:ip, op:op};
+  });
   const FORMS=T.formations.slice().sort((a,b)=>{
     const ia=FORM_ORDER.indexOf(a.name), ib=FORM_ORDER.indexOf(b.name);
     return (ia<0?99:ia)-(ib<0?99:ib) || a.name.localeCompare(b.name);
@@ -3462,60 +3487,403 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
         return f.score!=null && f.score>=60;
       });
       if(deputies.length===0 && r.player){
-        gaps.push({type:'nodeputy', slot:r.slot.id, i:r.i, role:r.cfg.ipRole, title:r.slot.id+'「'+r.cfg.ipRole+'」後備不足', detail:'揀咗嘅後備入面，冇人對呢個持波角色有≥60 嘅公開評分。', fit:null});
+        gaps.push({type:'nodeputy', slot:r.slot.id, i:r.i, role:r.cfg.ipRole, title:r.slot.id+'「'+r.cfg.ipRole+'」後備不足', detail:'揀咗嘅後備入面，冇人對呢個持波角色有≥60 嘅公開評分。下面選項係填一個空嘅後備位，唔係要取代正選 '+r.player.n+'。', fit:null, player:r.player});
       }
     });
     if(!filled.length) weaknesses.push('未揀十一人，暫時唔能夠計隊伍強弱。');
     return {avg, strengths, weaknesses, gaps, filled:filled.length};
   }
 
-  function recsForGap(gap){
-    const role=gap.role || (tac().slots[gap.i]||{}).ipRole;
-    if(!role) return {afford:[], over:[], unk:[], role:''};
-    const t=tac();
-    const taken=new Set((t.xi||[]).concat(t.bench||[]).filter(Boolean));
-    const my=(state.myClub||'').trim().toLowerCase();
+  const BAND={GK:90, CB:75, FB:71.5, DM:58, CM:48, AM:32, W:28, ST:20};
+  function sideOf(slot){
+    const id=slot.id||'';
+    if(/L$/.test(id) || id==='DL') return -1;
+    if(/R$/.test(id) || id==='DR') return 1;
+    if(slot.x<49) return -1;
+    if(slot.x>51) return 1;
+    return 0;
+  }
+  function xWide(slot){ const s=sideOf(slot); return s<0?13:(s>0?87:slot.x); }
+  function xChannel(slot){ const s=sideOf(slot); if(s<0) return 33; if(s>0) return 67; return slot.x<=50?34:66; }
+  function xInside(slot){ const s=sideOf(slot); if(s<0) return 34; if(s>0) return 66; return slot.x; }
+  function xCB(slot){ const s=sideOf(slot); if(s<0) return 37.5; if(s>0) return 62.5; return 50; }
+  function xDM(slot){ const s=sideOf(slot); if(s<0) return 37.5; if(s>0) return 62.5; return 50; }
+  function xWider(slot){ const s=sideOf(slot); if(s<0) return 22; if(s>0) return 78; return slot.x<=50?40:60; }
+  function clampPitch(x,y){ return {x:Math.min(92, Math.max(8, x)), y:Math.min(94, Math.max(8, y))}; }
+  function lerpTo(slot, tx, ty, t){
+    const k=t<=0?0:Math.max(0.45, Math.min(0.70, t));
+    return {x:slot.x+(tx-slot.x)*k, y:slot.y+(ty-slot.y)*k};
+  }
+  function stepUpY(y){
+    const bands=[75,71.5,58,48,32,28,20];
+    for(let i=0;i<bands.length;i++){ if(y-bands[i]>=8) return bands[i]; }
+    return Math.max(12, y-8);
+  }
+  function roleTarget(slot, role, phase){
+    const y=slot.y, x=slot.x;
+    const hold={tx:x, ty:y, t:0};
+    if(!role) return hold;
+    if(phase==='ip'){
+      switch(role){
+        case 'False Nine': return {tx:50, ty:BAND.AM, t:0.62};
+        case 'Deep-Lying Forward': return {tx:x, ty:28, t:0.58};
+        case 'Poacher': return {tx:x, ty:Math.min(y, 15), t:0.60};
+        case 'Target Forward': return {tx:x, ty:Math.min(y, 15.5), t:0.55};
+        case 'Channel Forward': return {tx:xChannel(slot), ty:Math.min(y, 18), t:0.62};
+        case 'Second Striker': return {tx:x, ty:BAND.ST, t:0.62};
+        case 'Inside Forward': return {tx:xInside(slot), ty:y, t:0.64};
+        case 'Inside Winger': return {tx:xInside(slot), ty:y, t:0.58};
+        case 'Playmaking Winger': return {tx:xInside(slot), ty:y, t:0.55};
+        case 'Wide Forward': return {tx:xWide(slot), ty:y, t:0.55};
+        case 'Winger': return {tx:xWide(slot), ty:y, t:0.50};
+        case 'Wide Midfielder': return {tx:xWide(slot), ty:y, t:0.45};
+        case 'Wide Central Midfielder': return {tx:xWide(slot), ty:y, t:0.60};
+        case 'Channel Midfielder': return {tx:xChannel(slot), ty:y-7, t:0.58};
+        case 'Advanced Wing-Back': return {tx:xWide(slot), ty:BAND.W, t:0.48};
+        case 'Wing-Back': return {tx:xWide(slot), ty:Math.min(y, 46), t:0.55};
+        case 'Inside Wing-Back': return {tx:xDM(slot), ty:y>BAND.DM?BAND.DM:y, t:0.58};
+        case 'Playmaking Wing-Back': return {tx:xDM(slot), ty:BAND.DM, t:0.60};
+        case 'Inside Full-Back': return {tx:xCB(slot), ty:y, t:0.62};
+        case 'Full-Back': return {tx:xWide(slot), ty:y, t:0.48};
+        case 'Half Back': return {tx:sideOf(slot)===0?x:xCB(slot), ty:BAND.CB, t:0.60};
+        case 'Overlapping Centre-Back': return {tx:xWider(slot), ty:62, t:0.58};
+        case 'Advanced Centre-Back': return {tx:x, ty:68, t:0.58};
+        case 'Wide Centre-Back': return {tx:xWider(slot), ty:y, t:0.58};
+        case 'Ball-Playing Goalkeeper': return {tx:x, ty:84, t:0.62};
+        default: return hold;
+      }
+    }
+    switch(role){
+      case 'Sweeper Keeper': return {tx:x, ty:83, t:0.64};
+      case 'Pressing Full-Back':
+      case 'Pressing Wing-Back':
+      case 'Pressing Central Midfielder':
+      case 'Pressing Defensive Midfielder': return {tx:x, ty:stepUpY(y), t:0.55};
+      case 'Holding Full-Back':
+      case 'Holding Wing-Back': return {tx:xWide(slot), ty:y<68?75:y, t:0.62};
+      case 'Dropping Defensive Midfielder': return {tx:sideOf(slot)===0?50:xCB(slot), ty:BAND.CB, t:0.62};
+      case 'Stopping Centre-Back':
+      case 'Stopping Wide Centre-Back': return {tx:x, ty:68, t:0.58};
+      case 'Wide Covering Defensive Midfielder':
+      case 'Wide Covering Central Midfielder': return {tx:xWider(slot), ty:y, t:0.55};
+      case 'Wide Centre-Back': return {tx:xWider(slot), ty:y, t:0.55};
+      case 'Wide Outlet Winger':
+      case 'Inside Outlet Winger':
+      case 'Wide Outlet Wide Midfielder': return {tx:x, ty:Math.min(y, 26), t:0.55};
+      case 'Central Outlet Attacking Midfielder':
+      case 'Splitting Outlet Attacking Midfielder': return {tx:x, ty:Math.min(y, 30), t:0.55};
+      case 'Central Outlet Centre Forward':
+      case 'Splitting Outlet Centre Forward': return {tx:x, ty:Math.min(y, 17), t:0.55};
+      case 'Tracking Winger': return {tx:x, ty:48, t:0.55};
+      case 'Tracking Wide Midfielder': return {tx:x, ty:71.5, t:0.50};
+      case 'Tracking Attacking Midfielder': return {tx:x, ty:48, t:0.58};
+      case 'Tracking Centre Forward': return {tx:x, ty:32, t:0.62};
+      default: return hold;
+    }
+  }
+  function piNudge(slot, pi, phase){
+    if(phase!=='ip') return {dx:0, dy:0};
+    const names=[];
+    const src=pi||{};
+    Object.keys(src).forEach(function(k){ if(src[k]) names.push(src[k]); });
+    const s=sideOf(slot);
+    let dx=0, dy=0;
+    names.forEach(function(name){
+      if(name==='Stay Wider') dx += s===0?3.2:3.2*s;
+      else if(name==='Sit Narrower'){ if(s!==0) dx += -2.8*s; }
+      else if(name==='Move Into Channels'){ dx += s===0?2.6:-2.6*s; dy += -2.2; }
+      else if(name==='Make More Runs') dy += -2.8;
+      else if(name==='Make Fewer Runs') dy += 2.6;
+      else if(name==='Cut Inside With Ball'){ if(s!==0) dx += -2.6*s; }
+      else if(name==='Run Wide With Ball') dx += s===0?2.6:2.6*s;
+      else if(name==='Byline') dy += -2.4;
+      else if(name==='Cross From Deep') dy += 2.4;
+    });
+    return {dx:dx, dy:dy};
+  }
+  function tokenPositions(slots, cfgs, phase){
+    const raw=slots.map(function(s,i){
+      const cfg=cfgs[i]||{};
+      const role=phase==='ip'?cfg.ipRole:cfg.oopRole;
+      const tgt=roleTarget(s, role, phase);
+      const base=tgt.t?lerpTo(s, tgt.tx, tgt.ty, tgt.t):{x:s.x, y:s.y};
+      const n=piNudge(s, cfg.pi, phase);
+      return clampPitch(base.x+n.dx, base.y+n.dy);
+    });
+    for(let i=0;i<raw.length;i++){
+      for(let j=0;j<i;j++){
+        const a=raw[i], b=raw[j];
+        if(Math.abs(a.x-b.x)<3.4 && Math.abs(a.y-b.y)<3.6){
+          const push=a.x>=b.x?3.6:-3.6;
+          const nx=clampPitch(a.x+push, a.y);
+          a.x=nx.x;
+          if(Math.abs(a.x-b.x)<2.2){
+            const ny=clampPitch(a.x, a.y+(a.y>=b.y?3.2:-3.2));
+            a.y=ny.y;
+          }
+        }
+      }
+    }
+    return raw;
+  }
+  function pct(n){ return Math.round(n*100)/100; }
+  function ensurePitchNote(){
+    if(document.getElementById('pitchNote')) return;
+    const stage=document.querySelector('.pitch-stage');
+    if(!stage) return;
+    const note=el('p','pitch-note');
+    note.id='pitchNote';
+    note.textContent='棋子位移係視覺近似：按公開角色描述（例如後撤到進攻中場、內收、再推前）對照呢個工具嘅陣式帶，再行大約四成半至七成距離。唔係 Sports Interactive 官方座標，亦唔係 Tactical Effectiveness。';
+    stage.insertAdjacentElement('afterend', note);
+  }
+
+  function closestRoleFast(map, name){
+    if(!name) return {name:'', score:null, exact:false, unknown:true};
+    if(map && map[name]!=null) return {name:name, score:map[name], exact:true};
+    for(const fam of (T.relatedRoles||[])){
+      if(fam.indexOf(name)<0) continue;
+      let best=null;
+      for(const alt of fam){
+        if(alt===name) continue;
+        if(map && map[alt]!=null && (!best || map[alt]>best.score)) best={name:alt, score:map[alt], exact:false, asked:name};
+      }
+      if(best) return best;
+    }
+    return {name:name, score:null, exact:false, unknown:true, asked:name};
+  }
+  function gapProfile(slotId, ipRole, oopRole){
+    const g=T.slotGroup[slotId]||'CM';
+    const ip=ipRole||'', op=oopRole||'';
+    let comps, golds, focus;
+    if(g==='GK'){
+      focus='龍門'; comps=['Defending','Mental','Physicality'];
+      golds=['Reads the Game','Positionally Sound','Aerial Defender','Mentality','Consistent','Pressure Proof','Leader','Physically Imposing'];
+    } else if(g==='DC'){
+      focus='中堅'; comps=['Defending','Physicality','Mental'];
+      golds=['Aerial Defender','Ball Winner','Positionally Sound','Reads the Game','Physically Imposing','Mentality','Consistent','Leader','High Press'];
+    } else if(g==='FB'||g==='WB'){
+      focus='閘／翼衛'; comps=['Physicality','Defending','Attacking'];
+      golds=['Pacey','Explosive','Tireless','High Press','Ball Winner','Carries Well','Two-Footed','Positionally Sound'];
+    } else if(g==='DM'){
+      focus='防守中場'; comps=['Defending','Mental','Playmaking'];
+      golds=['Ball Winner','Positionally Sound','Reads the Game','Range Passer','Press Resistant','Mentality','Tireless','High Press'];
+    } else if(g==='WM'||g==='W'){
+      focus='邊路'; comps=['Attacking','Physicality','Playmaking'];
+      golds=['Pacey','Explosive','Dribbler','Carries Well','Sharp Movement','Through Ball Threat','Two-Footed','Clinical','Tireless'];
+    } else if(g==='AM'){
+      focus='進攻中場'; comps=['Playmaking','Attacking','Control'];
+      golds=['Creative','Through Ball Threat','Technically Refined','Dribbler','Sharp Movement','Dead Ball Danger','Range Passer','Press Resistant'];
+    } else if(g==='ST'){
+      focus='前鋒'; comps=['Attacking','Physicality','Mental'];
+      golds=['Clinical','Aerial Threat','Sharp Movement','Pacey','Explosive','Penalty Taker','Physically Imposing','Through Ball Threat'];
+    } else {
+      focus='中場'; comps=['Control','Playmaking','Mental','Physicality'];
+      golds=['Range Passer','Through Ball Threat','Creative','Press Resistant','Tireless','Carries Well','Reads the Game','Technically Refined','Mentality'];
+    }
+    if(/False Nine|Deep-Lying|Playmaker|Advanced Playmaker|Free Role|Second Striker/.test(ip)){
+      comps=['Playmaking','Control','Attacking'];
+      focus=focus+'／組織';
+      golds=['Creative','Through Ball Threat','Range Passer','Technically Refined','Press Resistant','Dribbler','Sharp Movement','Dead Ball Danger'];
+    } else if(/Target Forward/.test(ip)){
+      comps=['Physicality','Attacking','Mental'];
+      golds=['Aerial Threat','Physically Imposing','Clinical','Mentality','Consistent'];
+    } else if(/Poacher|Channel Forward/.test(ip)){
+      comps=['Attacking','Physicality','Mental'];
+      golds=['Clinical','Sharp Movement','Pacey','Explosive','Penalty Taker','Aerial Threat'];
+    } else if(/Winger|Wide Forward|Inside Forward|Inside Winger|Wing-Back/.test(ip)){
+      comps=['Attacking','Physicality','Playmaking'];
+      golds=['Pacey','Explosive','Dribbler','Carries Well','Sharp Movement','Two-Footed','Through Ball Threat','Tireless','Clinical'];
+    }
+    if(/Pressing|Stopping|Wide Covering/.test(op) && (g==='DC'||g==='DM'||g==='FB'||g==='WB'||g==='CM')){
+      if(comps.indexOf('Defending')<0) comps=['Defending'].concat(comps);
+      ['High Press','Ball Winner','Tireless','Reads the Game','Positionally Sound'].forEach(function(x){ if(golds.indexOf(x)<0) golds.push(x); });
+    }
+    return {comps:comps.slice(0,4), golds:golds, focus:focus};
+  }
+  const COMP_I={Attacking:0,Control:1,Playmaking:2,Physicality:3,Mental:4,Defending:5};
+  function axisScore(p, idx, slotId, ipRole, oopRole, profile){
+    const fam=famScore(p, slotId);
+    const ip=closestRoleFast(idx&&idx.ip, ipRole);
+    const op=closestRoleFast(idx&&idx.op, oopRole);
+    const compVals=[];
+    (profile.comps||[]).forEach(function(name){
+      const v=(p.comp||[])[COMP_I[name]];
+      if(v!=null && v!=='') compVals.push({name:name, v:+v});
+    });
+    const compAvg=compVals.length?compVals.reduce(function(s,x){return s+x.v},0)/compVals.length:null;
+    const golds=(p.gold||[]).map(function(g){return g.t||g}).filter(Boolean);
+    const goldHits=golds.filter(function(g){return profile.golds.indexOf(g)>=0});
+    const famPart=(fam.score||0)/20*100;
+    const ipPart=ip.score==null?0:Math.max(0, Math.min(100, ip.score));
+    const opPart=op.score==null?0:Math.max(0, Math.min(100, op.score));
+    const compPart=compAvg==null?0:Math.max(0, Math.min(20, compAvg))/20*100;
+    const goldPart=Math.min(2, goldHits.length)/2*100;
+    const score=famPart*0.30+ipPart*0.28+opPart*0.14+compPart*0.22+goldPart*0.06;
+    return {score:score, fam:fam, ip:ip, op:op, compVals:compVals, goldHits:goldHits, golds:golds};
+  }
+  function isFreeAgent(p){
+    return !!(p.free) || /^free$/i.test(p.club||'') || (p.club||'')==='' || /free agent/i.test(p.con||'');
+  }
+  function assessFeasibility(p){
+    const isFree=isFreeAgent(p);
+    const val=isFree?0:parseMoney(p.val);
+    const wage=parseMoney(p.wage);
     const bud=parseMoney(state.budget);
     const wbud=parseMoney(state.wageBudget);
+    const valRaw=isFree?(p.val||'£0'):(p.val||'未列');
+    const wageRaw=p.wage||'未列';
+    const budRaw=(state.budget||'').trim();
+    const wbudRaw=(state.wageBudget||'').trim();
+    const parts=[];
+    let badge, tone;
+    const valOver=bud!=null && val!=null && !isFree && val>bud;
+    const wageOver=wbud!=null && wage!=null && wage>wbud;
+    const valUnknown=!isFree && val==null && bud!=null;
+    const wageUnknown=wage==null && wbud!=null;
+    if(isFree) parts.push('自由身（列出身價 '+valRaw+'）。自由身通常較易落實，但球員本人仍然可以拒絕。');
+    if(bud==null && wbud==null){
+      badge=isFree?'自由身·未設上限':'未設上限';
+      tone=isFree?'free':'nocap';
+      parts.push('未設定轉會上限同周薪上限，所以未能量買唔買得起。列出身價 '+valRaw+'、周薪 '+wageRaw+'。');
+    } else {
+      if(bud==null) parts.push('未設轉會上限。列出身價 '+valRaw+'。');
+      else if(isFree) parts.push('轉會上限係 '+budRaw+'；自由身冇轉會費要對到呢個上限。');
+      else if(val==null) parts.push('轉會上限係 '+budRaw+'，但未列身價，所以未能量身價係咪超標。');
+      else if(valOver) parts.push('列出身價 '+valRaw+' 高過轉會上限 '+budRaw+'，以而家嘅錢計呢單較唔現實。');
+      else parts.push('列出身價 '+valRaw+' 唔高過轉會上限 '+budRaw+'。');
+      if(wbud==null) parts.push('未設周薪上限。列出周薪 '+wageRaw+'。');
+      else if(wage==null) parts.push('周薪上限係 '+wbudRaw+'，但未列周薪，所以未能量周薪係咪超標。');
+      else if(wageOver) parts.push('列出周薪 '+wageRaw+' 高過周薪上限 '+wbudRaw+'，以而家嘅錢計較唔現實。');
+      else parts.push('列出周薪 '+wageRaw+' 唔高過周薪上限 '+wbudRaw+'。');
+      if(valOver || wageOver){ badge='較唔現實'; tone='over'; }
+      else if(isFree){ badge='自由身·較易'; tone='free'; }
+      else if(valUnknown || wageUnknown){ badge='數字未齊'; tone='nocap'; }
+      else { badge='上限以內'; tone='ok'; }
+    }
+    parts.push('列出嘅身價同周薪係估計，唔係叫價；就算數字睇落負擔得起，賣出球會或者球員都可以拒絕。呢度唔會估最低出價，亦唔會估對方肯唔肯賣。');
+    return {badge:badge, tone:tone, text:parts.join(''), isFree:isFree};
+  }
+  function starMarks(n){
+    n=Math.max(0, Math.min(5, +n||0));
+    return '★'.repeat(n)+'☆'.repeat(5-n);
+  }
+  function whyText(p, slotId, ipRole, oopRole, profile, ax){
+    const pos=slotIdToPos(slotId);
+    const bits=[];
+    if(ax.fam.score) bits.push('位置熟悉 '+pos+' '+(ax.fam.label||'已列')+' '+ax.fam.score+'/20，對呢個'+profile.focus+'位有直接幫助');
+    else bits.push('未列 '+pos+' 嘅位置熟悉度，所以熟悉度冇計入優勢');
+    if(ax.ip.score!=null){
+      bits.push(ax.ip.exact
+        ? ('持波角色正好係 '+ipRole+' '+ax.ip.score+'，對呢個角色缺口有幫助')
+        : ('持波未列「'+ipRole+'」原分，相近角色 '+ax.ip.name+' '+ax.ip.score+' 先用嚟參考'));
+    } else bits.push('未列持波「'+ipRole+'」或者相近角色評分，唔會捏造數字');
+    if(oopRole){
+      if(ax.op.score!=null){
+        bits.push(ax.op.exact
+          ? ('冇波角色正好係 '+oopRole+' '+ax.op.score)
+          : ('冇波未列「'+oopRole+'」原分，相近角色 '+ax.op.name+' '+ax.op.score));
+      } else bits.push('未列冇波「'+oopRole+'」評分');
+    }
+    if(ax.compVals.length){
+      const shown=ax.compVals.map(function(c){return COMP_ZH[c.name]+' '+c.v}).join('、');
+      const hi=ax.compVals.filter(function(c){return c.v>=13});
+      if(hi.length) bits.push('同呢個缺口相關嘅 FM Scout 綜合分 '+shown+'；其中 '+hi.map(function(c){return COMP_ZH[c.name]+' '+c.v}).join('、')+' 較高，對呢個位幫助較明顯');
+      else bits.push('同呢個缺口相關嘅 FM Scout 綜合分 '+shown+'（1–20）。呢幾項未見特別高，只係如實列出');
+    } else bits.push('未列 FM Scout 綜合分');
+    if(ax.goldHits.length) bits.push('列出優點 '+ax.goldHits.join('、')+' 同呢個缺口相符');
+    else if(ax.golds.length) bits.push('列出優點 '+ax.golds.join('、')+'，未當係呢個缺口嘅直接優勢');
+    else bits.push('未列優點');
+    const caLab=p.cal || ((p.ca||0)? (p.ca+' 星') : '未列');
+    const paLab=p.pal || ((p.pa||0)? (p.pa+' 星') : '未列');
+    bits.push('能力星級 '+starMarks(p.ca||0)+' '+caLab+'，潛力星級 '+starMarks(p.pa||0)+' '+paLab+'（FM Scout 展示，唔係隱藏 CA／PA）');
+    return bits.join('。')+'。';
+  }
+  function degreeText(score, occScore, hasOcc){
+    const s=Math.round(score);
+    if(!hasOcc){
+      const band=s>=74?'高':(s>=60?'中':'低');
+      return {band:band, rank:score, text:'補強程度 '+s+'（'+band+'）。呢個位而家冇人可比，分級用簽入後嘅啟發式分：74 或以上係高、60–73 係中、59 或以下係低。計法係位置熟悉 30%、持波角色 28%、冇波角色 14%、相關綜合分 22%、相關優點 6%。呢個係啟發式，唔係預測評分，亦唔係官方 CA。'};
+    }
+    const delta=score-occScore;
+    const band=delta>=10?'高':(delta>=3?'中':'低');
+    const cmp=delta>=0?('高出 '+Math.round(delta)):('低過現任 '+Math.round(-delta));
+    return {band:band, rank:delta, text:'補強程度：簽入後啟發式 '+s+'，現任 '+Math.round(occScore)+'，'+cmp+'，所以係'+band+'。相對現任，高出 10 或以上係高、高出 3–9 係中、其餘係低。計法係位置熟悉 30%、持波角色 28%、冇波角色 14%、相關綜合分 22%、相關優點 6%。呢個係啟發式，唔係預測評分，亦唔係官方 CA。'};
+  }
+  function passesRecFilters(p, val, wage){
     const ageMax=parseInt(state.recFilters.ageMax,10);
     const maxVal=parseMoney(state.recFilters.maxVal);
     const maxWage=parseMoney(state.recFilters.maxWage);
-    const cands=[];
-    for(const p of POOL){
-      if(taken.has(p.id)) continue;
-      if(my && (p.club||'').toLowerCase()===my) continue;
-      if(state.recFilters.onlyFree && !p.free && !/free/i.test(p.con||'') && (p.club||'')!=='') continue;
-      if(!isNaN(ageMax) && p.a && p.a>ageMax) continue;
-      const hit=closestRole(p.ip, role);
-      if(hit.score==null || hit.score<62) continue;
-      const val=parseMoney(p.val);
-      const wage=parseMoney(p.wage);
-      if(maxVal!=null && val!=null && val>maxVal) continue;
-      if(maxWage!=null && wage!=null && wage>maxWage) continue;
-      cands.push({p, hit, val, wage});
-    }
-    cands.sort((a,b)=>b.hit.score-a.hit.score);
-    const top=cands.slice(0,40);
-    const afford=[], over=[], unk=[];
-    const noCap=bud==null && wbud==null;
-    top.forEach(c=>{
-      const isFree=!!c.p.free || /free/i.test(c.p.con||'') || (c.p.club||'')==='';
-      const val=isFree?0:c.val;
-      let within=null;
-      if(noCap){ within=null; }
-      else {
-        const okV= bud==null || val==null || val<=bud || isFree;
-        const okW= wbud==null || c.wage==null || c.wage<=wbud;
-        if(val==null && !isFree && bud!=null) within=null;
-        else within=okV && okW && (isFree || bud==null || val<=bud);
-      }
-      const rec={...c, isFree, within};
-      if(noCap) unk.push(rec);
-      else if(within===true) afford.push(rec);
-      else if(within===false) over.push(rec);
-      else unk.push(rec);
+    if(state.recFilters.onlyFree && !isFreeAgent(p)) return false;
+    if(!isNaN(ageMax) && p.a && p.a>ageMax) return false;
+    if(maxVal!=null && val!=null && val>maxVal) return false;
+    if(maxWage!=null && wage!=null && wage>maxWage) return false;
+    return true;
+  }
+  let optCache={key:'', map:Object.create(null)};
+  let reportGen=0, reportTimer=0;
+  function optionsCacheKey(){
+    const t=tac();
+    return JSON.stringify({
+      xi:t.xi, bench:t.bench,
+      slots:(t.slots||[]).map(function(s){return {a:s.ipRole,b:s.oopRole,p:s.pi||{}}}),
+      bud:state.budget, wage:state.wageBudget, my:state.myClub,
+      rf:state.recFilters, sex:(state.filters&&state.filters.sex)||'M'
     });
-    return {afford:afford.slice(0,8), over:over.slice(0,8), unk:unk.slice(0, noCap?8:6), role, noCap};
+  }
+  function optionsForGap(gap){
+    const key=optionsCacheKey();
+    const gk=(gap.type||'')+'|'+(gap.i)+'|'+(gap.slot||'')+'|'+(gap.role||'');
+    if(optCache.key!==key) optCache={key:key, map:Object.create(null)};
+    if(optCache.map[gk]) return optCache.map[gk];
+    const t=tac();
+    const cfg=t.slots[gap.i]||{};
+    const ipRole=gap.role||cfg.ipRole||'';
+    const oopRole=cfg.oopRole||'';
+    const slotId=gap.slot;
+    if(!ipRole && !oopRole) return {list:[], matched:0, ipRole:'', oopRole:oopRole, sex:'M'};
+    const profile=gapProfile(slotId, ipRole, oopRole);
+    const taken=new Set((t.xi||[]).concat(t.bench||[]).filter(Boolean));
+    const my=(state.myClub||'').trim().toLowerCase();
+    const sexWant=(state.filters&&state.filters.sex)||'M';
+    const compareOcc=!!(gap.player) && gap.type!=='nodeputy' && gap.type!=='empty';
+    let occScore=null;
+    if(compareOcc){
+      occScore=axisScore(gap.player, {ip:roleObj(gap.player.ip), op:roleObj(gap.player.op)}, slotId, ipRole, oopRole, profile).score;
+    }
+    const strict=[], loose=[];
+    for(let n=0;n<POOL.length;n++){
+      const p=POOL[n];
+      if(!p.n || taken.has(p.id)) continue;
+      if(my && (p.club||'').toLowerCase()===my) continue;
+      if((sexWant==='M'||sexWant==='F') && playerSex(p)!==sexWant) continue;
+      const listedVal=isFreeAgent(p)?0:parseMoney(p.val);
+      const listedWage=parseMoney(p.wage);
+      if(!passesRecFilters(p, listedVal, listedWage)) continue;
+      if(!(p.pos||[]).length && !(p.ip||[]).length) continue;
+      const ax=axisScore(p, ROLE_IDX[n], slotId, ipRole, oopRole, profile);
+      const eligible=(ax.fam.score>=8) || (ax.ip.score!=null && ax.ip.score>=50) || (ax.op.score!=null && ax.op.score>=50);
+      const soft=(ax.fam.score>=6) || ax.ip.score!=null || ax.op.score!=null;
+      if(!soft) continue;
+      const deg=degreeText(ax.score, compareOcc?occScore:null, compareOcc);
+      const row={p:p, ax:ax, deg:deg, profile:profile, feas:null};
+      if(eligible) strict.push(row); else loose.push(row);
+    }
+    let pool=strict.length>=10?strict:strict.concat(loose);
+    pool.sort(function(a,b){
+      if(b.deg.rank!==a.deg.rank) return b.deg.rank-a.deg.rank;
+      return (a.p.n||'').localeCompare(b.p.n||'');
+    });
+    const matched=pool.length;
+    const list=pool.slice(0,14);
+    list.forEach(function(row){ row.feas=assessFeasibility(row.p); });
+    const result={list:list, matched:matched, ipRole:ipRole, oopRole:oopRole, profile:profile, sex:sexWant, compareOcc:compareOcc, occScore:occScore};
+    optCache.map[gk]=result;
+    return result;
+  }
+  function roleObj(arr){
+    const m=Object.create(null);
+    (arr||[]).forEach(function(r){ if(m[r[0]]==null || r[1]>m[r[0]]) m[r[0]]=r[1]; });
+    return m;
   }
 
   function renderAll(){
@@ -3555,22 +3923,29 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
       if(t.xi.length!==11) t.xi=Array(11).fill('').map((_,i)=>t.xi[i]||'');
     }
     const wrap=$('#pitchSlots');
-    wrap.innerHTML='';
+    let nodes=Array.from(wrap.children);
+    if(nodes.length!==form.slots.length){
+      wrap.innerHTML='';
+      nodes=form.slots.map(function(){ const d=el('div','slot'); wrap.appendChild(d); return d; });
+    }
+    const cfgs=form.slots.map(function(s,i){ return t.slots[i]||{ipRole:defaultRole(s.id,'ip'),oopRole:defaultRole(s.id,'oop'),pi:{}}; });
+    const poss=tokenPositions(form.slots, cfgs, state.phase);
     form.slots.forEach((s,i)=>{
-      const cfg=t.slots[i]||{ipRole:defaultRole(s.id,'ip'),oopRole:defaultRole(s.id,'oop'),pi:{}};
+      const cfg=cfgs[i];
       const p=t.xi[i]?byId[t.xi[i]]:null;
       const fit=slotFit(p,cfg,s.id);
-      const d=el('div','slot'+(state.selSlot===i?' on':''));
-      d.style.left=s.x+'%';
-      d.style.top=s.y+'%';
+      const d=nodes[i];
+      d.className='slot'+(state.selSlot===i?' on':'');
+      d.style.left=pct(poss[i].x)+'%';
+      d.style.top=pct(poss[i].y)+'%';
       const photo=p&&p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.remove()">`:esc(s.id);
       d.innerHTML=`<div class="dot">${photo}</div>
         <div class="nm">${esc(p?p.n:s.id)}</div>
         <div class="rl">${esc(state.phase==='ip'?cfg.ipRole:cfg.oopRole)}</div>
         <span class="fitb ${fitClass(fit.total)}">${fit.total==null?'?':fit.total}</span>`;
       d.onclick=()=>{state.selSlot=i;renderAll()};
-      wrap.appendChild(d);
     });
+    ensurePitchNote();
   }
   function renderInspector(){
     const t=tac();
@@ -3605,7 +3980,7 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
       wrap.appendChild(document.createTextNode(ins.name+'（'+(ins.phase==='out_of_possession'?'冇波':'持波')+'）'));
       const sel=document.createElement('select');
       sel.innerHTML=`<option value="">（預設）</option>`+(ins.options||[]).map(o=>`<option ${((cfg.pi||{})[ins.id]===o.name)?'selected':''}>${esc(o.name)}</option>`).join('');
-      sel.onchange=()=>{cfg.pi=cfg.pi||{}; if(!sel.value) delete cfg.pi[ins.id]; else cfg.pi[ins.id]=sel.value; t.slots[i]=cfg; saveState()};
+      sel.onchange=()=>{cfg.pi=cfg.pi||{}; if(!sel.value) delete cfg.pi[ins.id]; else cfg.pi[ins.id]=sel.value; t.slots[i]=cfg; renderPitch(); saveState()};
       wrap.appendChild(sel);
       pis.appendChild(wrap);
     });
@@ -3635,6 +4010,7 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
     state.tab=id;
     $all('.tabbtn').forEach(b=>b.classList.toggle('on', b.dataset.tab===id));
     $all('.pane').forEach(p=>p.classList.toggle('on', p.id==='pane-'+id));
+    if(id==='report') renderReport();
     saveState();
   }
   function renderPicker(){
@@ -3785,10 +4161,24 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
       };
     }
   }
-  function recCard(r){
-    const p=r.p;
-    const why=`持波「${esc(r.hit.exact?r.hit.name:r.hit.name+'（近似）')}」評分 ${r.hit.score}`+(p.a?` · ${p.a}歲`:'')+` · ${esc(p.club||'自由身')} · ${esc(p.val||'身價未列')} · ${esc(p.wage||'周薪未列')}`;
-    return `<div class="cardp" data-id="${esc(p.id)}"><b>${esc(p.n)}</b><div class="meta muted">${why}</div></div>`;
+  function optionCard(row, ipRole, oopRole){
+    const p=row.p;
+    const why=whyText(p, row.slotId, ipRole, oopRole, row.profile, row.ax);
+    const feas=row.feas;
+    const bandCls=row.deg.band==='高'?'deg-high':(row.deg.band==='中'?'deg-mid':'deg-low');
+    const feasCls=feas.tone==='ok'?'feas-ok':(feas.tone==='free'?'feas-free':(feas.tone==='over'?'feas-over':'feas-nocap'));
+    const photo=p.photo?`<img src="${esc(p.photo)}" alt="" onerror="this.outerHTML='<span class=&quot;opt-ph&quot;></span>'">`:`<span class="opt-ph"></span>`;
+    return `<button type="button" class="opt" data-id="${esc(p.id)}">
+      ${photo}
+      <span class="opt-body">
+        <span class="opt-top"><b>${esc(p.n)}</b><span class="club">${esc(p.club||'自由身')}${p.a?(' · '+esc(p.a)+'歲'):''}</span>
+          <span class="badge ${bandCls}">補強 ${esc(row.deg.band)}</span>
+          <span class="badge ${feasCls}">${esc(feas.badge)}</span></span>
+        <span class="why">${esc(why)}</span>
+        <span class="degline">${esc(row.deg.text)}</span>
+        <span class="feasline">${esc(feas.text)}</span>
+      </span>
+    </button>`;
   }
   function renderReport(){
     const box=$('#report');
@@ -3802,35 +4192,64 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
       }).join('');
       const st=rep.strengths.length?rep.strengths.map(s=>`<span class="pill" style="cursor:default">${esc(s)}</span>`).join(''):'<span class="muted">資料唔夠，或者未見突出強項。</span>';
       const wk=rep.weaknesses.length?rep.weaknesses.map(s=>`<span class="pill" style="cursor:default">${esc(s)}</span>`).join(''):'<span class="muted">未見由現有數字／角色推到嘅明顯弱項。</span>';
-      const gaps=rep.gaps.slice(0,10);
-      const capNote = (state.budget||state.wageBudget)
-        ? `轉會預算 ${esc(state.budget||'未設')}；周薪預算 ${esc(state.wageBudget||'未設')}。`
-        : '尚未設定轉會／周薪預算，合適人選會暫時列喺「未判斷買唔買到」。填咗預算就會分成買得到同買唔到。';
+      const gaps=rep.gaps;
+      const sexWant=(state.filters&&state.filters.sex)||'M';
+      const sexLab=sexWant==='M'?'男球員':(sexWant==='F'?'女球員':'男女球員');
+      const capNote=(state.budget||state.wageBudget)
+        ? `轉會上限 ${esc(state.budget||'未設')}；周薪上限 ${esc(state.wageBudget||'未設')}。可行性只係用列出嘅估計身價／周薪對呢兩個上限，唔會再分成兩欄。`
+        : '未設定轉會／周薪上限。每張卡仍然會顯示列出嘅估計身價同周薪，並標明未能量買唔買得起。';
       box.innerHTML=`<h3>十一人契合</h3>
         <div class="small">用位置熟悉度、持波／冇波角色公開評分加權。冇分就標「未知」，唔會造假。呢個唔係遊戲入面嘅 Tactical Effectiveness。</div>
         ${fits}
         <h3>強項</h3><div>${st}</div>
         <h3>弱項</h3><div>${wk}</div>
         <h3>缺口同補強</h3>
-        <div class="small">${capNote} 身價／周薪只採用 FM Scout 列出嘅數字，遊戲入面可能唔同，對方都可以拒絕。</div>
+        <div class="small">${capNote} 選項跟揀人嗰邊嘅性別篩選（而家係${esc(sexLab)}），按補強程度排序，每個缺口最多 14 個。上面「再限身價／周薪」先會收窄名單；轉會同周薪上限本身只影響可行性標記。</div>
         <div id="gaps"></div>`;
       const gbox=$('#gaps');
-      if(!gaps.length) gbox.innerHTML='<div class="small">暫時未標到明顯缺口。</div>';
-      gaps.forEach(g=>{
-        const rec=g.role?recsForGap(g):{afford:[],over:[],unk:[],role:'',noCap:false};
-        const div=el('div','');
-        const unkTitle=rec.noCap?'合適、但未設預算所以未分買唔買到':'身價或周薪未列、無法判斷買唔買到';
-        div.innerHTML=`<div style="margin:14px 0 6px"><b>${esc(g.title)}</b><div class="small">${esc(g.detail||'')}</div></div>
-          ${g.role?`<div class="recs">
-            <div class="colA"><h4>補強得到、又買得到</h4>${rec.afford.length?rec.afford.map(recCard).join(''):'<div class="small">喺現有庫同預算入面，暫時未找到合適人選。</div>'}</div>
-            <div class="colB"><h4>補強得到、但買唔到</h4>${rec.over.length?rec.over.map(recCard).join(''):'<div class="small">冇超出預算但角色合適嘅人，或者未能量到身價。</div>'}</div>
-          </div>
-          ${rec.unk&&rec.unk.length?`<div class="small" style="margin-top:8px">${unkTitle}：${rec.unk.map(x=>esc(x.p.n)).join('、')}</div>`:''}`:''}`;
+      if(!gaps.length){ gbox.innerHTML='<div class="small">暫時未標到明顯缺口。</div>'; return; }
+      const showOpts=state.tab==='report';
+      gaps.forEach(function(g,gi){
+        const div=el('div','gap');
+        div.innerHTML=`<h4>${esc(g.title)}</h4>
+          <div class="small">${esc(g.detail||'')}</div>
+          <div class="opts" data-gi="${gi}">${showOpts?'<div class="small">計算緊補強選項…</div>':''}</div>`;
         gbox.appendChild(div);
       });
-      $all('.cardp',gbox).forEach(c=>c.onclick=()=>openDossier(c.getAttribute('data-id')));
+      if(!showOpts) return;
+      const gen=++reportGen;
+      clearTimeout(reportTimer);
+      const fillGap=function(gi){
+        if(gen!==reportGen) return;
+        const host=$('#gaps');
+        if(!host) return;
+        const g=gaps[gi];
+        const slot=host.querySelector('.opts[data-gi="'+gi+'"]');
+        if(g && slot){
+          try{
+            const rec=g.role?optionsForGap(g):{list:[], matched:0, ipRole:'', oopRole:''};
+            const cards=rec.list||[];
+            cards.forEach(function(row){ row.slotId=g.slot; if(!row.profile) row.profile=rec.profile; });
+            const countNote=g.role
+              ? (cards.length
+                  ? ('合條件 '+rec.matched+' 人，顯示補強程度最高嘅 '+cards.length+' 個。')
+                  : '呢組篩選下暫時未有合適選項。可以改性別、放寬年齡或者身價。')
+              : '';
+            const note=slot.previousElementSibling;
+            if(note && countNote) note.textContent=(g.detail?g.detail+' ':'')+countNote;
+            slot.innerHTML=cards.length?cards.map(function(row){return optionCard(row, rec.ipRole, rec.oopRole);}).join(''):'';
+            $all('.opt',slot).forEach(c=>c.onclick=()=>openDossier(c.getAttribute('data-id')));
+          }catch(err){
+            slot.innerHTML='<div class="small">呢個缺口嘅選項暫時出唔到。</div>';
+            console.error(err);
+          }
+        }
+        if(gi+1<gaps.length) reportTimer=setTimeout(function(){ fillGap(gi+1); }, 0);
+      };
+      reportTimer=setTimeout(function(){ fillGap(0); }, 30);
     }catch(err){
       box.innerHTML='<div class="warn">分析暫時出唔到：'+esc(err.message)+'</div>';
+      console.error(err);
     }
   }
 
@@ -3894,7 +4313,7 @@ window.FM27_SEX_F=new Set(["2000100172", "2000101084", "2000101300", "2000101403
       if(g('fAgeMax')) state.filters.ageMax=g('fAgeMax').value.trim();
       if(g('fCa')) state.filters.caMin=+g('fCa').value||0;
       if(g('fPa')) state.filters.paMin=+g('fPa').value||0;
-      renderPicker(); saveState();
+      renderPicker(); renderReport(); saveState();
     };
     ['fSex','fPos','fFam','fNat','fAgeMin','fAgeMax','fCa','fPa'].forEach(id=>{
       const el=$('#'+id); if(!el || el.dataset.bound) return;
